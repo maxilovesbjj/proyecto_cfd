@@ -1,0 +1,125 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     simpleFoam;
+
+startFrom       startTime;
+startTime       0;
+
+stopAt          endTime;
+endTime         800;
+
+deltaT          1;
+
+writeControl    timeStep;
+writeInterval   100;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+writePrecision  6;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable yes;
+
+functions
+{
+    // 1) Residuales (p, U, k, epsilon)
+    #includeFunc residuals
+
+    // 2) Caudal en inlet/outlet
+    #includeFunc patchFlowRate(patch=inlet)
+    #includeFunc patchFlowRate(patch=outlet)
+
+    // 3) Presión media en inlet y outlet (para Δp = pinlet - poutlet)
+    #includeFunc patchAverage(patch=inlet,  fields=(p))
+    #includeFunc patchAverage(patch=outlet, fields=(p))
+
+    // 4) Campos de pared: yPlus y wallShearStress
+    yPlus
+    {
+        type            yPlus;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+    }
+
+    wallShear
+    {
+        type            wallShearStress;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+    }
+
+    // 5) Probes en puntos sobre el eje de la tubería
+    centerProbes
+    {
+        type            probes;
+        libs            ("libsampling.so");
+        fields          (p U);
+
+        probeLocations
+        (
+            (0      0 0)
+            (2.5    0 0)
+            (5      0 0)
+            (7.5    0 0)
+            (10     0 0)
+        );
+
+        writeControl    timeStep;
+        writeInterval   5;
+    }
+
+    // 6) Líneas de muestreo (axial y radial)
+    profiles
+    {
+        type            sets;
+        libs            ("libsampling.so");
+
+        interpolationScheme cellPoint;
+        setFormat       csv;
+
+        fields          (p U);
+
+        sets
+        (
+            axisLine
+            {
+                type    lineUniform;
+                axis    x;
+                start   (0 0 0);
+                end     (10 0 0);
+                nPoints 200;
+            }
+
+            radialOutlet
+            {
+                type    lineUniform;
+                axis    y;
+                start   (10 0 0);
+                end     (10 0.175 0);
+                nPoints 100;
+            }
+        );
+
+        writeControl    timeStep;
+        writeInterval   50;
+    }
+}
+
+// ************************************************************************* //
+

@@ -1,0 +1,58 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{booktabs}
+\usepackage{geometry}
+\geometry{margin=2cm}
+\usepackage{graphicx}
+\usepackage{amsmath}
+
+\title{OpenFOAM run report: pipe20m\_\_20251125-111607\_\_prueba1}
+\author{Automatic backend}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Run metadata}
+
+\begin{tabular}{@{}ll}
+Run name   & pipe20m\_\_20251125-111607\_\_prueba1 \\
+Base case  & pipe20m \\
+Tag        & prueba1 \\
+Created at & 2025-11-25T11:16:09 \\
+Directory  & /home/flavio/OpenFOAM/flavio-11/run/cases/current\_cases/pipe20m\_\_20251125-111607\_\_prueba1 \\
+\end{tabular}
+
+\bigskip
+
+
+\section*{Pressure drop}
+No fue posible calcular la caída de presión (faltan datos de \texttt{patchAverage(p)}).
+
+
+
+\section*{Mesh information}
+No log.checkMesh file was found in the case directory.
+
+
+\section*{Post-processing plots}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.9\linewidth]{img/dp_vs_time.png}
+  \caption{Pressure drop $\Delta p = p_{inlet} - p_{outlet}$ as a function of time.}
+  \label{fig:dp-vs-time}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.9\linewidth]{img/flowrate_in_out.png}
+  \caption{Volumetric flow rate (sum(phi)) at inlet and outlet.}
+  \label{fig:flowrate}
+\end{figure}
+
+
+\end{document}

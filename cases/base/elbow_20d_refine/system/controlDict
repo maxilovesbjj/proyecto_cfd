@@ -1,0 +1,135 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  Field          | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   Operation      | Version:  11                                    |
+|   \\  /    And            |                                                 |
+|    \\/     Manipulation   |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+
+application     foamRun;
+solver          incompressibleFluid;
+
+// --- Time control ---
+// Arranca siempre desde el último tiempo escrito (ahora 1000 s, con perfil desarrollado)
+startFrom       latestTime;
+startTime       0;          // ignorado porque usamos latestTime
+
+stopAt          endTime;
+endTime         1300;       // corre 300 iteraciones más desde 1000
+
+deltaT          1;          // un paso de SIMPLE por unidad de tiempo "falsa"
+
+// --- Escritura ---
+writeControl    timeStep;
+writeInterval   100;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+writePrecision  7;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable yes;
+
+// --- Funciones de post-proceso EN TIEMPO DE CÁLCULO ---
+functions
+{
+    // Residuales integrados estándar
+    #includeFunc residuals
+
+    // Caudal en inlet y outlet
+    #includeFunc patchFlowRate(patch=inlet)
+    #includeFunc patchFlowRate(patch=outlet)
+
+    // Presión media en inlet y outlet (para sacar Δp = pin - pout)
+    #includeFunc patchAverage(patch=inlet,  fields=(p))
+    #includeFunc patchAverage(patch=outlet, fields=(p))
+
+    // yPlus en la pared
+    yPlus
+    {
+        type            yPlus;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+    }
+
+    // Esfuerzo cortante en la pared
+    wallShear
+    {
+        type            wallShearStress;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+    }
+
+    // Probes en el eje de la tubería
+    centerProbes
+    {
+        type            probes;
+        libs            ("libsampling.so");
+        fields          (p U);
+
+        probeLocations
+        (
+            (0      0 0)
+            (2.5    0 0)
+            (5      0 0)
+            (7.5    0 0)
+            (10     0 0)
+            (15     0 0)
+            (20     0 0)
+        );
+
+        writeControl    timeStep;
+        writeInterval   10;
+    }
+
+    // Líneas de perfiles (eje y radial en la salida)
+    profiles
+    {
+        type            sets;
+        libs            ("libsampling.so");
+
+        interpolationScheme cellPoint;
+        setFormat       csv;
+
+        fields          (p U);
+
+        sets
+        (
+            axisLine
+            {
+                type    lineUniform;
+                axis    x;
+                start   (0   0    0);
+                end     (20  0    0);
+                nPoints 200;
+            }
+
+            radialOutlet
+            {
+                type    lineUniform;
+                axis    y;
+                start   (20  0     0);
+                end     (20  0.175 0);
+                nPoints 100;
+            }
+        );
+
+        writeControl    timeStep;
+        writeInterval   50;
+    }
+}
+
+// ************************************************************************* //

@@ -1,0 +1,38 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      sampleDict;
+}
+
+interpolationScheme cellPoint;
+
+sets
+(
+    beforeElbow
+    {
+        type            cuttingPlane;
+        planeType       pointAndNormal;
+
+        // Sección interna en tramo recto de entrada (eje X)
+        point           (2 0 0);      // 2 m desde el inlet
+        normal          (1 0 0);      // plano perpendicular al eje X
+
+        fields          (p);
+    }
+
+    afterElbow
+    {
+        type            cuttingPlane;
+        planeType       pointAndNormal;
+
+        // Sección interna en tramo recto de salida (eje Y)
+        point           (0 5 0);      // 5 m después del inicio del tramo Y
+        normal          (0 1 0);      // plano perpendicular al eje Y
+
+        fields          (p);
+    }
+);
+
+surfaceFormat raw;

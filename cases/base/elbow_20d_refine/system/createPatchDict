@@ -1,0 +1,29 @@
+patches
+(
+    // Sección antes del codo
+    {
+        name    midIn;
+        patchInfo
+        {
+            type    patch;
+        }
+        faces
+        (
+            (  <LISTA DE FACES AUTOGENERABLE> )
+        );
+    }
+
+    // Sección después del codo
+    {
+        name    midOut;
+        patchInfo
+        {
+            type    patch;
+        }
+        faces
+        (
+            (  <LISTA DE FACES AUTOGENERABLE> )
+        );
+    }
+);
+

@@ -1,0 +1,100 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  Field          | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   Operation      | Version:  11                                    |
+|   \\  /    And            |                                                 |
+|    \\/     Manipulation   |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      blockMeshDict;
+}
+
+// Tubería CILÍNDRICA:
+// Longitud: 20 m
+// Diámetro interior: 0.35 m -> radio R = 0.175 m
+// Eje: x (0 -> 20)
+// Sección: círculo en plano y–z, centro (0,0)
+
+convertToMeters 1;
+
+vertices
+(
+    // Sección en x = 0
+    (0      0       -0.175)   // 0  (abajo)
+    (0      0.175    0    )   // 1  (derecha)
+    (0      0        0.175)   // 2  (arriba)
+    (0     -0.175    0    )   // 3  (izquierda)
+
+    // Sección en x = 20
+    (20     0       -0.175)   // 4
+    (20     0.175    0    )   // 5
+    (20     0        0.175)   // 6
+    (20    -0.175    0    )   // 7
+);
+
+blocks
+(
+    // Malla refinada:
+ 
+    hex (0 1 2 3 4 5 6 7) (800 20 20) simpleGrading (1 1 1)
+);
+
+edges
+(
+    // Arcos en la sección x = 0 (radio R = 0.175, factor 1/sqrt(2) ~ 0.7071)
+    arc 0 1 (0   0.123743  -0.123743)
+    arc 1 2 (0   0.123743   0.123743)
+    arc 2 3 (0  -0.123743   0.123743)
+    arc 3 0 (0  -0.123743  -0.123743)
+
+    // Arcos en la sección x = 20
+    arc 4 5 (20  0.123743  -0.123743)
+    arc 5 6 (20  0.123743   0.123743)
+    arc 6 7 (20 -0.123743   0.123743)
+    arc 7 4 (20 -0.123743  -0.123743)
+);
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces
+        (
+            (0 1 2 3)
+        );
+    }
+
+    outlet
+    {
+        type patch;
+        faces
+        (
+            (4 5 6 7)
+        );
+    }
+
+    walls
+    {
+        type wall;
+        faces
+        (
+            (0 4 5 1)   // cuadrante 1
+            (1 5 6 2)   // cuadrante 2
+            (2 6 7 3)   // cuadrante 3
+            (3 7 4 0)   // cuadrante 4
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

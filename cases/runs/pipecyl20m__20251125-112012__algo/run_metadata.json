@@ -1,0 +1,8 @@
+{
+  "run_name": "pipecyl20m__20251125-112012__algo",
+  "base_case": "pipecyl20m",
+  "tag": "algo",
+  "created_at": "2025-11-25T11:20:14",
+  "cases_root": "/home/flavio/OpenFOAM/flavio-11/run/cases",
+  "run_path": "/home/flavio/OpenFOAM/flavio-11/run/cases/current_cases/pipecyl20m__20251125-112012__algo"
+}

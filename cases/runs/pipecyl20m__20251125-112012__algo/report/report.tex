@@ -1,0 +1,226 @@
+\documentclass[11pt]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{fancyvrb}
+
+\title{Reporte de simulación OpenFOAM}
+\author{Backend automático}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Información del caso}
+
+\begin{longtable}{p{4cm}p{10cm}}
+Nombre de la corrida & pipecyl20m__20251125-112012__algo \\
+Caso base & pipecyl20m \\
+Etiqueta & algo \\
+Fecha de creación & 2025-11-25 11:20:14 \\
+Directorio raíz & \verb|/home/flavio/OpenFOAM/flavio-11/run/cases| \\
+Ruta de la corrida & \verb|/home/flavio/OpenFOAM/flavio-11/run/cases/current_cases/pipecyl20m__20251125-112012__algo| \\
+Solver & simpleFoam \\
+\end{longtable}
+
+\section*{Información de la malla}
+
+\begin{center}
+\begin{tabular}{l r}
+\hline
+Puntos & 668865 \\
+Caras & 1979392 \\
+Caras internas & 1952768 \\
+Celdas & 655360 \\
+\hline
+\end{tabular}
+\end{center}
+
+\paragraph{Observaciones de calidad}\mbox{}\\
+Se detectaron los siguientes mensajes relevantes en \verb|checkMesh|:
+
+\begin{itemize}
+\item Mesh non-orthogonality Max: 39.8359 average: 7.04935
+\item Non-orthogonality check OK.
+\end{itemize}
+
+
+\section*{Resumen de ejecución}
+
+Las últimas líneas del log del solver (simpleFoam) se muestran a continuación. Esto puede dar una idea de la convergencia o de posibles problemas:
+
+\begin{Verbatim}[fontsize=\small]
+
+Time = 799s
+
+smoothSolver:  Solving for Ux, Initial residual = 0.000161331, Final residual = 1.36624e-05, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.000151163, Final residual = 1.28017e-05, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.00015115, Final residual = 1.28002e-05, No Iterations 2
+GAMG:  Solving for p, Initial residual = 7.94935e-05, Final residual = 6.22831e-05, No Iterations 60
+time step continuity errors : sum local = 2.49007e-06, global = 1.64855e-07, cumulative = 0.00763556
+smoothSolver:  Solving for omega, Initial residual = 1.4611e-05, Final residual = 1.14524e-06, No Iterations 2
+smoothSolver:  Solving for k, Initial residual = 0.00021154, Final residual = 1.71874e-05, No Iterations 2
+ExecutionTime = 8441.18 s  ClockTime = 8442 s
+
+Time = 800s
+
+smoothSolver:  Solving for Ux, Initial residual = 0.000160707, Final residual = 1.36095e-05, No Iterations 2
+smoothSolver:  Solving for Uy, Initial residual = 0.000150826, Final residual = 1.27732e-05, No Iterations 2
+smoothSolver:  Solving for Uz, Initial residual = 0.000150812, Final residual = 1.27717e-05, No Iterations 2
+GAMG:  Solving for p, Initial residual = 7.92608e-05, Final residual = 6.20882e-05, No Iterations 60
+time step continuity errors : sum local = 2.48191e-06, global = 1.64293e-07, cumulative = 0.00763573
+smoothSolver:  Solving for omega, Initial residual = 1.45945e-05, Final residual = 1.1442e-06, No Iterations 2
+smoothSolver:  Solving for k, Initial residual = 0.000211217, Final residual = 1.71632e-05, No Iterations 2
+ExecutionTime = 8454.09 s  ClockTime = 8455 s
+
+End
+
+\end{Verbatim}
+
+\section*{Resultados de postProcessing}
+
+
+\subsection*{Promedios de presión en entrada y salida}
+
+En esta sección se muestran los promedios de presión en los patches de entrada y salida, así como el salto de presión entre ambos.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{pressure_average.png}
+    \caption{Evolución temporal de la presión promedio en los patches de entrada y salida.}
+\end{figure}
+
+
+
+\begin{center}
+\begin{tabular}{lccc}
+\hline
+Tiempo final & $\bar p_{\text{inlet}}$ & $\bar p_{\text{outlet}}$ & $\Delta p$ (inlet $-$ outlet) \\\\
+\hline
+800.00 & 3.111e+00 & 0.000e+00 & 3.111e+00 \\\\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+La caída de presión teórica para flujo laminar plenamente desarrollado en tubería circular se estima mediante
+la expresión de Hagen--Poiseuille en términos de presión cinemática:
+
+\[
+\Delta p_{\text{teo}} = 32 \, \nu \, U_{\text{bulk}} \, \frac{L}{D^2}
+\]
+
+donde $L$ es la longitud del tramo de tubería, $D$ el diámetro, $U_{\text{bulk}}$ la velocidad media y $\nu$ la viscosidad cinemática.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\hline
+$L$ & $D$ & $\nu$ & Re & $\Delta p_{\text{teo}}$ \\\\
+\hline
+20.000 & 0.350 & 1.000e-06 & 1049791.1 & 1.568e-02 \\\\
+\hline
+\end{tabular}
+\end{center}
+
+El error relativo entre la simulación y la teoría, usando los valores en régimen, es del orden de
+\[
+\varepsilon_{\Delta p} \approx 19741.91\,\% .
+\]
+
+
+
+
+\subsection*{Caudales en entrada y salida}
+
+A continuación se muestran los caudales (sum(phi)) en los patches de entrada y salida.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{flow_rate.png}
+    \caption{Evolución temporal del caudal en los patches de entrada y salida.}
+\end{figure}
+
+
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+Tiempo final & $Q_{\text{inlet}}$ & $Q_{\text{outlet}}$ \\\\
+\hline
+800.00 & -2.885e-01 & 2.885e-01 \\\\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+El caudal en régimen se relaciona con la velocidad media mediante $Q = U_{\text{bulk}} A$.
+A partir del caudal numérico se obtiene:
+
+\begin{center}
+\begin{tabular}{lccc}
+\hline
+$U_{\text{bulk}}$ & Área & $Q_{\text{num}}$ & Re \\\\
+\hline
+3.000 & 9.617e-02 & 2.885e-01 & 1049791.1 \\\\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+
+\subsection*{Indicadores de calidad de malla: $y^+$}
+
+El archivo \verb|yPlus.dat| proporciona los valores mínimos, máximos y promedios de $y^+$ en el patch de paredes. Aquí se representa la evolución del valor promedio.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{yplus_average.png}
+    \caption{Evolución temporal del $y^+$ promedio en el patch de paredes.}
+\end{figure}
+
+
+
+\begin{center}
+\begin{tabular}{lc}
+\hline
+Tiempo final & $y^+_{\text{promedio}}$ \\\\
+\hline
+800.00 & 2.204e+02 \\\\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+
+\subsection*{Perfiles de velocidad y comparación con teoría}
+
+A partir de los datos en \verb|postProcessing/profiles| se representan perfiles de velocidad característicos para el último tiempo disponible ($t = 800$). Se comparan con la solución teórica de flujo laminar plenamente desarrollado en tubería.
+
+Para este caso se obtiene un número de Reynolds aproximado de $Re \approx 1049791$. La curva teórica utilizada corresponde al perfil laminar plenamente desarrollado en tubería circular.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\textwidth]{profile_axis_Ux.png}
+    \caption{Velocidad en el eje de la tubería comparada con el valor teórico laminar $U_{\max} = 2 U_{\text{bulk}}$ en el tiempo $t = 800$.}
+\end{figure}
+
+
+
+\section*{Notas}
+
+Este reporte fue generado automáticamente por el backend de procesamiento de casos.
+Puedes extender este documento para incluir figuras adicionales, tablas de postprocesado, etc.
+
+\end{document}

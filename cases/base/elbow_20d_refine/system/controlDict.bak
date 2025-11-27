@@ -1,0 +1,127 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  Field          | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   Operation      | Version:  11                                    |
+|   \\  /    And            |                                                 |
+|    \\/     Manipulation   |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+
+application     foamRun;
+solver          incompressibleFluid;
+
+// --- INICIO PRINCIPAL ---
+startFrom       latestTime;      // usa el tiempo 1000 importado por mapFields
+startTime       0;               // ignorado porque startFrom=latestTime
+
+stopAt          endTime;
+endTime         1300;            // <<<<<< AUMENTADO (antes era 1000)
+
+// Cada paso = 1 iteración SIMPLE
+deltaT          1;
+
+// --- Escritura ---
+writeControl    timeStep;
+writeInterval   100;
+
+purgeWrite      0;
+writeFormat     ascii;
+writePrecision  7;
+writeCompression off;
+
+timeFormat      general;
+timePrecision   6;
+
+runTimeModifiable yes;
+
+// --- Funciones ---
+functions
+{
+    #includeFunc residuals
+
+    #includeFunc patchFlowRate(patch=inlet)
+    #includeFunc patchFlowRate(patch=outlet)
+
+    #includeFunc patchAverage(patch=inlet,  fields=(p))
+    #includeFunc patchAverage(patch=outlet, fields=(p))
+
+    yPlus
+    {
+        type            yPlus;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+    }
+
+    wallShear
+    {
+        type            wallShearStress;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+    }
+
+    centerProbes
+    {
+        type            probes;
+        libs            ("libsampling.so");
+        fields          (p U);
+
+        probeLocations
+        (
+            (0      0 0)
+            (2.5    0 0)
+            (5      0 0)
+            (7.5    0 0)
+            (10     0 0)
+            (15     0 0)
+            (20     0 0)
+        );
+
+        writeControl    timeStep;
+        writeInterval   10;
+    }
+
+    profiles
+    {
+        type            sets;
+        libs            ("libsampling.so");
+
+        interpolationScheme cellPoint;
+        setFormat       csv;
+
+        fields          (p U);
+
+        sets
+        (
+            axisLine
+            {
+                type    lineUniform;
+                axis    x;
+                start   (0   0    0);
+                end     (20  0    0);
+                nPoints 200;
+            }
+
+            radialOutlet
+            {
+                type    lineUniform;
+                axis    y;
+                start   (20  0     0);
+                end     (20  0.175 0);
+                nPoints 100;
+            }
+        );
+
+        writeControl    timeStep;
+        writeInterval   50;
+    }
+}
+
+// ************************************************************************* //

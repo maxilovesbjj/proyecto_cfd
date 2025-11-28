@@ -1,0 +1,2 @@
+# losses_calculator has no external runtime dependencies.
+# All logic is implemented using Python's standard library.
